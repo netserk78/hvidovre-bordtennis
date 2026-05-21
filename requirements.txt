@@ -1,0 +1,1 @@
+# Ingen eksterne pakker - kun Python standard bibliotek

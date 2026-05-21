@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: hvidovre-bordtennis
+    runtime: python
+    buildCommand: echo "Ingen build nødvendig"
+    startCommand: python3 server.py
+    envVars:
+      - key: DB_PATH
+        value: /data/bordtennis.db
+    disk:
+      name: bordtennis-data
+      mountPath: /data
+      sizeGB: 1
