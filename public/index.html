@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hvidovre Bordtennis Klub</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #eff6ff; --surface: #ffffff; --surface2: #dbeafe;
+      --border: #bfdbfe; --text: #1e3a5f; --muted: #6b93b8;
+      --accent: #3b82f6; --accent-dark: #2563eb; --accent-light: #dbeafe;
+      --red: #e05252; --red-light: #fce8e8; --radius: 14px; --nav-h: 64px;
+    }
+    body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; }
+
+    nav { position:fixed; top:0; left:0; right:0; height:var(--nav-h); background:rgba(255,255,255,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 32px; z-index:100; gap:32px; }
+    .nav-logo { font-size:1.2rem; font-weight:800; color:var(--accent); cursor:pointer; display:flex; align-items:center; gap:8px; }
+    .nav-links { display:flex; gap:6px; flex:1; }
+    .nav-link { padding:7px 14px; border-radius:8px; font-size:0.85rem; font-weight:500; color:var(--muted); cursor:pointer; border:none; background:none; transition:all .15s; }
+    .nav-link:hover { color:var(--accent); background:var(--accent-light); }
+    .nav-link.active { color:var(--accent); background:var(--accent-light); }
+    .nav-right { display:flex; align-items:center; gap:10px; }
+    .nav-user { font-size:0.82rem; color:var(--muted); display:flex; align-items:center; gap:8px; }
+    .nav-avatar { width:32px; height:32px; border-radius:50%; background:var(--accent); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; }
+
+    .btn { padding:8px 18px; border-radius:8px; font-size:0.85rem; font-weight:600; border:none; cursor:pointer; transition:all .15s; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover { background:var(--accent-dark); }
+    .btn-outline { background:transparent; color:var(--accent); border:1.5px solid var(--accent); }
+    .btn-outline:hover { background:var(--accent-light); }
+    .btn-danger { background:var(--red); color:white; }
+    .btn-danger:hover { opacity:0.85; }
+    .btn-sm { padding:5px 12px; font-size:0.78rem; border-radius:6px; }
+
+    .page { display:none; padding-top:var(--nav-h); }
+    .page.active { display:block; }
+    .container { max-width:1000px; margin:0 auto; padding:40px 24px; }
+
+    .hero { text-align:center; padding:80px 24px 60px; background:linear-gradient(180deg,rgba(59,130,246,0.08) 0%,transparent 100%); }
+    .hero-badge { display:inline-block; background:var(--accent-light); color:var(--accent); border:1px solid var(--border); padding:4px 14px; border-radius:99px; font-size:0.78rem; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:20px; }
+    .hero h1 { font-size:clamp(2rem,5vw,3.5rem); font-weight:900; letter-spacing:-2px; line-height:1.1; margin-bottom:18px; }
+    .hero h1 span { color:var(--accent); }
+    .hero p { font-size:1.05rem; color:var(--muted); max-width:480px; margin:0 auto 32px; line-height:1.7; }
+    .hero-btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+    .info-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+    .info-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+    .info-card-icon { font-size:2rem; margin-bottom:12px; }
+    .info-card h3 { font-size:1rem; font-weight:700; margin-bottom:6px; }
+    .info-card p { font-size:0.85rem; color:var(--muted); line-height:1.6; }
+    .hours-table { width:100%; border-collapse:collapse; margin-top:8px; }
+    .hours-table td { padding:4px 0; font-size:0.83rem; color:var(--muted); }
+    .hours-table td:first-child { color:var(--text); font-weight:500; }
+
+    .auth-wrap { min-height:calc(100vh - var(--nav-h)); display:flex; align-items:center; justify-content:center; padding:40px 24px; }
+    .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:40px; width:100%; max-width:420px; }
+    .auth-card h2 { font-size:1.6rem; font-weight:800; margin-bottom:6px; }
+    .auth-card .sub { color:var(--muted); font-size:0.87rem; margin-bottom:28px; }
+    .field { margin-bottom:16px; }
+    .field label { display:block; font-size:0.82rem; font-weight:600; margin-bottom:6px; color:var(--muted); }
+    .field input { width:100%; padding:11px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--bg); color:var(--text); font-size:0.92rem; outline:none; transition:border-color .2s; }
+    .field input:focus { border-color:var(--accent); }
+    .auth-switch { margin-top:20px; text-align:center; font-size:0.83rem; color:var(--muted); }
+    .auth-switch a { color:var(--accent); cursor:pointer; }
+    .auth-switch a:hover { text-decoration:underline; }
+    .error-msg { background:var(--red-light); border:1px solid rgba(224,82,82,0.3); color:var(--red); border-radius:8px; padding:10px 14px; font-size:0.83rem; margin-bottom:16px; display:none; }
+    .success-msg { background:var(--accent-light); border:1px solid var(--border); color:var(--accent); border-radius:8px; padding:10px 14px; font-size:0.83rem; margin-bottom:16px; display:none; }
+
+    .booking-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+    .booking-header h2 { font-size:1.5rem; font-weight:800; }
+    .week-quota { font-size:0.82rem; color:var(--muted); margin-top:4px; }
+    .date-picker-wrap { display:flex; align-items:center; gap:10px; }
+    .date-picker-wrap input[type="date"] { padding:9px 14px; border:1.5px solid var(--border); border-radius:9px; background:var(--surface); color:var(--text); font-size:0.9rem; outline:none; }
+    .date-picker-wrap input[type="date"]:focus { border-color:var(--accent); }
+    .booking-grid { overflow-x:auto; }
+    .grid-table { width:100%; border-collapse:separate; border-spacing:4px; min-width:640px; }
+    .grid-table th { background:var(--surface2); padding:10px 8px; border-radius:8px; font-size:0.78rem; font-weight:700; color:var(--muted); text-align:center; }
+    .grid-table th.time-col { width:90px; }
+    .grid-table td { padding:4px; }
+    .grid-table td.time-label { font-size:0.78rem; color:var(--muted); text-align:right; padding-right:10px; white-space:nowrap; font-weight:600; }
+    .slot { background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px 4px; text-align:center; cursor:pointer; transition:all .15s; font-size:0.75rem; color:var(--muted); min-height:54px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
+    .slot:hover:not(.booked):not(.mine):not(.past) { background:var(--accent-light); border-color:var(--accent); color:var(--accent); }
+    .slot.available { color:var(--accent); }
+    .slot.booked { background:var(--red-light); border-color:rgba(224,82,82,0.3); color:var(--red); cursor:not-allowed; }
+    .slot.mine { background:var(--accent-light); border-color:rgba(59,130,246,0.4); color:var(--accent); }
+    .slot.past { opacity:0.3; cursor:not-allowed; }
+    .slot-name { font-size:0.68rem; max-width:70px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .legend { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:0.78rem; color:var(--muted); }
+    .legend-dot { width:12px; height:12px; border-radius:3px; }
+
+    .booking-list { display:flex; flex-direction:column; gap:12px; }
+    .booking-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px 20px; display:flex; align-items:center; gap:16px; animation:slideIn .2s ease; }
+    @keyframes slideIn { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+    .booking-card-icon { width:44px; height:44px; border-radius:10px; background:var(--accent-light); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0; }
+    .booking-card-body { flex:1; }
+    .booking-card-body h4 { font-size:0.95rem; font-weight:700; margin-bottom:4px; }
+    .booking-card-body p { font-size:0.82rem; color:var(--muted); }
+    .booking-past { opacity:0.45; }
+
+    .admin-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-bottom:28px; }
+    .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .stat-card .num { font-size:2rem; font-weight:900; color:var(--accent); line-height:1; margin-bottom:4px; }
+    .stat-card .lbl { font-size:0.8rem; color:var(--muted); }
+    .admin-table { width:100%; border-collapse:collapse; }
+    .admin-table th,.admin-table td { padding:12px 14px; text-align:left; border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .admin-table th { color:var(--muted); font-weight:700; font-size:0.75rem; text-transform:uppercase; letter-spacing:.5px; }
+    .admin-table tr:hover td { background:var(--surface2); }
+    .section-title { font-size:1.2rem; font-weight:800; margin-bottom:16px; margin-top:32px; }
+    .section-title:first-child { margin-top:0; }
+
+    .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .overlay.show { display:flex; }
+    .modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; width:100%; max-width:380px; }
+    .modal h3 { font-size:1.2rem; font-weight:800; margin-bottom:6px; }
+    .modal p { font-size:0.87rem; color:var(--muted); margin-bottom:24px; line-height:1.5; }
+    .modal-btns { display:flex; gap:10px; justify-content:flex-end; }
+
+    .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+    .empty-state .icon { font-size:3rem; margin-bottom:12px; }
+    .tag { display:inline-block; padding:2px 10px; border-radius:99px; font-size:0.72rem; font-weight:700; }
+    .tag-green { background:var(--accent-light); color:var(--accent); }
+    .tag-red { background:var(--red-light); color:var(--red); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">🏓 Hvidovre BK</div>
+  <div class="nav-links" id="navLinks"></div>
+  <div class="nav-right" id="navRight"></div>
+</nav>
+
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-badge">🏓 Velkommen til Hvidovre Bordtennis Klub</div>
+    <h1>Hvidovre<br><span>Bordtennis Klub</span></h1>
+    <p>Book et af vores 7 borde online — hurtigt, nemt og uden ventetid. Vi har plads til alle niveauer.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="showPage('booking')" style="padding:12px 28px;font-size:1rem">Book et bord</button>
+      <button class="btn btn-outline" onclick="showPage('register')" style="padding:12px 28px;font-size:1rem">Opret konto</button>
+    </div>
+  </div>
+  <div class="container">
+    <div class="info-grid">
+      <div class="info-card"><div class="info-card-icon">🕐</div><h3>Åbningstider</h3>
+        <table class="hours-table"><tr><td>Man–Fre</td><td>08:00–22:00</td></tr><tr><td>Lørdag</td><td>09:00–20:00</td></tr><tr><td>Søndag</td><td>10:00–18:00</td></tr></table>
+      </div>
+      <div class="info-card"><div class="info-card-icon">🏓</div><h3>7 professionelle borde</h3><p>Alle borde er af professionel kvalitet med Butterfly-net. Perfekt til træning og turnering.</p></div>
+      <div class="info-card"><div class="info-card-icon">📅</div><h3>Book 2 timer ad gangen</h3><p>Hvert slot er på 2 timer. Maks. 2 bookinger pr. uge pr. person. Book op til 14 dage frem.</p></div>
+      <div class="info-card"><div class="info-card-icon">📍</div><h3>Find os</h3><p>Sportvej 12, 2650 Hvidovre<br><br>Parkering tilgængeligt foran hallen.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-login">
+  <div class="auth-wrap"><div class="auth-card">
+    <h2>Log ind</h2><div class="sub">Velkommen tilbage!</div>
+    <div class="error-msg" id="loginError"></div>
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="din@email.dk"></div>
+    <div class="field"><label>Adgangskode</label><input type="password" id="loginPwd" placeholder="••••••••"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doLogin()">Log ind</button>
+    <div class="auth-switch">Ingen konto? <a onclick="showPage('register')">Opret konto</a></div>
+  </div></div>
+</div>
+
+<div class="page" id="page-register">
+  <div class="auth-wrap"><div class="auth-card">
+    <h2>Opret konto</h2><div class="sub">Gratis — book borde med det samme.</div>
+    <div class="error-msg" id="regError"></div>
+    <div class="success-msg" id="regSuccess"></div>
+    <div class="field"><label>Navn</label><input type="text" id="regName" placeholder="Dit fulde navn"></div>
+    <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="din@email.dk"></div>
+    <div class="field"><label>Adgangskode</label><input type="password" id="regPwd" placeholder="Min. 6 tegn"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doRegister()">Opret konto</button>
+    <div class="auth-switch">Har du en konto? <a onclick="showPage('login')">Log ind</a></div>
+  </div></div>
+</div>
+
+<div class="page" id="page-booking">
+  <div class="container">
+    <div class="booking-header">
+      <div><h2>Book et bord</h2><div class="week-quota" id="weekQuota"></div></div>
+      <div class="date-picker-wrap">
+        <span style="font-size:0.85rem;color:var(--muted)">Dato:</span>
+        <input type="date" id="bookingDate" onchange="renderGrid()">
+      </div>
+    </div>
+    <div class="booking-grid"><table class="grid-table" id="bookingGrid"></table></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#fff;border:1px solid var(--border)"></div> Ledig</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent-light);border:1px solid rgba(59,130,246,0.4)"></div> Din booking</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red-light);border:1px solid rgba(224,82,82,0.3)"></div> Optaget</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fff;opacity:0.3;border:1px solid var(--border)"></div> Fortid</div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="page-mybookings">
+  <div class="container">
+    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:24px">Mine bookinger</h2>
+    <div id="myBookingsList"></div>
+  </div>
+</div>
+
+<div class="page" id="page-admin">
+  <div class="container">
+    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:24px">⚙️ Admin panel</h2>
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="section-title">Alle bookinger</div>
+    <div id="adminBookings"></div>
+    <div class="section-title">Alle brugere</div>
+    <div id="adminUsers"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h3 id="modalTitle"></h3><p id="modalBody"></p>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeModal()">Luk</button>
+      <button class="btn btn-primary" id="modalOk"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLOTS = ['08:00','10:00','12:00','14:00','16:00','18:00','20:00'];
+const SLOT_END = {'08:00':'10:00','10:00':'12:00','12:00':'14:00','14:00':'16:00','16:00':'18:00','18:00':'20:00','20:00':'22:00'};
+let me = null;
+let allBookings = [];
+
+const api = async (method, url, body) => {
+  const r = await fetch(url, {
+    method, credentials:'include',
+    headers: body ? {'Content-Type':'application/json'} : {},
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return r.json();
+};
+
+async function init() {
+  me = await api('GET', '/api/me');
+  buildNav();
+}
+
+function today() { return new Date().toISOString().slice(0,10); }
+function addDays(d, n) { const dt = new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if (name === 'booking') initBooking();
+  if (name === 'mybookings') renderMyBookings();
+  if (name === 'admin') renderAdmin();
+  buildNav();
+}
+
+function buildNav() {
+  const links = document.getElementById('navLinks');
+  const right = document.getElementById('navRight');
+  const active = document.querySelector('.page.active')?.id?.replace('page-','');
+
+  const pages = [
+    {id:'home', label:'Forside'},
+    {id:'booking', label:'Book bord'},
+    ...(me ? [{id:'mybookings', label:'Mine bookinger'}] : []),
+    ...(me?.isAdmin ? [{id:'admin', label:'⚙️ Admin'}] : []),
+  ];
+  links.innerHTML = '';
+  pages.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-link' + (active===p.id?' active':'');
+    btn.textContent = p.label;
+    btn.onclick = () => showPage(p.id);
+    links.appendChild(btn);
+  });
+  right.innerHTML = '';
+  if (me) {
+    right.innerHTML = `<div class="nav-user"><div class="nav-avatar">${me.name[0].toUpperCase()}</div><span>${me.name}</span></div>`;
+    const lb = document.createElement('button');
+    lb.className = 'btn btn-outline btn-sm'; lb.textContent = 'Log ud';
+    lb.onclick = doLogout; right.appendChild(lb);
+  } else {
+    const li = document.createElement('button'); li.className='btn btn-outline btn-sm'; li.textContent='Log ind'; li.onclick=()=>showPage('login');
+    const re = document.createElement('button'); re.className='btn btn-primary btn-sm'; re.textContent='Opret konto'; re.onclick=()=>showPage('register');
+    right.appendChild(li); right.appendChild(re);
+  }
+}
+
+async function doLogin() {
+  const err = document.getElementById('loginError'); err.style.display='none';
+  const res = await api('POST','/api/login',{email:document.getElementById('loginEmail').value, pwd:document.getElementById('loginPwd').value});
+  if (res.error) { err.textContent=res.error; err.style.display='block'; return; }
+  me = res; showPage('booking');
+}
+
+async function doRegister() {
+  const err = document.getElementById('regError'), ok = document.getElementById('regSuccess');
+  err.style.display='none'; ok.style.display='none';
+  const res = await api('POST','/api/register',{
+    name:document.getElementById('regName').value,
+    email:document.getElementById('regEmail').value,
+    pwd:document.getElementById('regPwd').value
+  });
+  if (res.error) { err.textContent=res.error; err.style.display='block'; return; }
+  me = res; ok.textContent='Konto oprettet!'; ok.style.display='block';
+  setTimeout(()=>showPage('booking'),800);
+}
+
+async function doLogout() {
+  await api('POST','/api/logout'); me=null; showPage('home');
+}
+
+// ── Booking ──────────────────────────────────────────────────────────────────
+async function initBooking() {
+  const el = document.getElementById('bookingDate');
+  el.value = el.value || today();
+  el.min = today(); el.max = addDays(today(),14);
+  await renderGrid();
+}
+
+async function renderGrid() {
+  const date = document.getElementById('bookingDate').value || today();
+  const now = new Date();
+  allBookings = await api('GET', `/api/bookings?date=${date}`);
+
+  // Week quota
+  const quotaEl = document.getElementById('weekQuota');
+  if (me) {
+    const weekStart = getMonday(date), weekEnd = addDays(weekStart,6);
+    const myWeek = allBookings.filter(b=>b.user_id===me.id).length;
+    // fetch all my bookings for the week
+    const myAll = await api('GET','/api/mybookings');
+    const used = myAll.filter(b=>{
+      const bd=b.date; return bd>=weekStart && bd<=weekEnd && new Date(`${bd}T${b.slot}:00`)>=now;
+    }).length;
+    const left = 2 - used;
+    quotaEl.textContent = left>0 ? `Du har ${left} booking${left===1?'':'er'} tilbage denne uge` : '⚠️ Du har brugt dine 2 bookinger denne uge';
+    quotaEl.style.color = left>0?'var(--muted)':'var(--red)';
+  } else { quotaEl.textContent=''; }
+
+  const grid = document.getElementById('bookingGrid');
+  let html = '<thead><tr><th class="time-col">Tid</th>';
+  for(let t=1;t<=7;t++) html+=`<th>Bord ${t}</th>`;
+  html+='</tr></thead><tbody>';
+
+  SLOTS.forEach(slot=>{
+    const slotDate=new Date(`${date}T${slot}:00`);
+    const isPast=slotDate<now;
+    html+=`<tr><td class="time-label">${slot}–${SLOT_END[slot]}</td>`;
+    for(let t=1;t<=7;t++){
+      const b=allBookings.find(b=>b.table_num===t&&b.slot===slot);
+      let cls='slot', label='Ledig', name='', onclick='';
+      if(isPast){cls+=' past';label='—';}
+      else if(b){
+        if(me&&b.user_id===me.id){cls+=' mine';label='Din';onclick=`onclick="cancelBooking('${b.id}')"`;}
+        else{cls+=' booked';label='Optaget';name=b.user_name.split(' ')[0];}
+      } else {
+        cls+=' available';
+        onclick=me?`onclick="bookSlot(${t},'${date}','${slot}')"`:`onclick="showPage('login')"`;
+      }
+      html+=`<td><div class="${cls}" ${onclick}><span>${label}</span>${name?`<span class="slot-name">${esc(name)}</span>`:''}</div></td>`;
+    }
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  grid.innerHTML=html;
+}
+
+function getMonday(dateStr){
+  const d=new Date(dateStr); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d.toISOString().slice(0,10);
+}
+
+function bookSlot(table,date,slot){
+  if(!me){showPage('login');return;}
+  showModal('Bekræft booking',
+    `Vil du booke Bord ${table} den ${fmtDate(date)} kl. ${slot}–${SLOT_END[slot]}?`,
+    'Bekræft','btn-primary',
+    async ()=>{
+      const res=await api('POST','/api/bookings',{table,date,slot});
+      closeModal();
+      if(res.error){alert(res.error);}
+      else{renderGrid();}
+    }
+  );
+}
+
+function cancelBooking(id){
+  showModal('Annuller booking','Er du sikker på, at du vil annullere denne booking?',
+    'Ja, annuller','btn-danger',
+    async ()=>{
+      await api('DELETE',`/api/bookings/${id}`);
+      closeModal(); renderGrid();
+    }
+  );
+}
+
+// ── My bookings ───────────────────────────────────────────────────────────────
+async function renderMyBookings(){
+  const list=document.getElementById('myBookingsList');
+  if(!me){list.innerHTML='<div class="empty-state"><div class="icon">🔒</div><p>Log ind for at se dine bookinger.</p></div>';return;}
+  const mine=await api('GET','/api/mybookings');
+  if(!mine.length){list.innerHTML='<div class="empty-state"><div class="icon">📅</div><p>Du har ingen bookinger endnu. <a style="color:var(--accent);cursor:pointer" onclick="showPage(\'booking\')">Book et bord →</a></p></div>';return;}
+  const now=new Date();
+  list.innerHTML='<div class="booking-list">'+mine.map(b=>{
+    const isPast=new Date(`${b.date}T${b.slot}:00`)<now;
+    return `<div class="booking-card${isPast?' booking-past':''}">
+      <div class="booking-card-icon">${isPast?'✅':'🏓'}</div>
+      <div class="booking-card-body"><h4>Bord ${b.table_num} — ${fmtDate(b.date)}</h4>
+      <p>Kl. ${b.slot}–${SLOT_END[b.slot]} &nbsp;·&nbsp; <span class="tag ${isPast?'tag-red':'tag-green'}">${isPast?'Afsluttet':'Kommende'}</span></p></div>
+      ${!isPast?`<button class="btn btn-outline btn-sm" onclick="cancelFromList('${b.id}')">Annuller</button>`:''}
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function cancelFromList(id){
+  showModal('Annuller booking','Er du sikker?','Ja, annuller','btn-danger',async()=>{
+    await api('DELETE',`/api/bookings/${id}`); closeModal(); renderMyBookings();
+  });
+}
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+async function renderAdmin(){
+  if(!me?.isAdmin)return;
+  const [bookings,users]=await Promise.all([api('GET','/api/admin/bookings'),api('GET','/api/admin/users')]);
+  const now=new Date();
+  const upcoming=bookings.filter(b=>new Date(`${b.date}T${b.slot}:00`)>=now);
+  document.getElementById('adminStats').innerHTML=`
+    <div class="stat-card"><div class="num">${users.length}</div><div class="lbl">Brugere</div></div>
+    <div class="stat-card"><div class="num">${bookings.length}</div><div class="lbl">Bookinger i alt</div></div>
+    <div class="stat-card"><div class="num">${upcoming.length}</div><div class="lbl">Kommende</div></div>
+    <div class="stat-card"><div class="num">7</div><div class="lbl">Borde</div></div>`;
+
+  document.getElementById('adminBookings').innerHTML = bookings.length ?
+    `<div style="overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    <table class="admin-table"><thead><tr><th>Dato</th><th>Tid</th><th>Bord</th><th>Bruger</th><th>Status</th><th></th></tr></thead><tbody>`+
+    bookings.map(b=>{
+      const isPast=new Date(`${b.date}T${b.slot}:00`)<now;
+      return `<tr><td>${fmtDate(b.date)}</td><td>${b.slot}–${SLOT_END[b.slot]}</td><td>Bord ${b.table_num}</td><td>${esc(b.user_name)}</td>
+        <td><span class="tag ${isPast?'tag-red':'tag-green'}">${isPast?'Afsluttet':'Kommende'}</span></td>
+        <td><button class="btn btn-danger btn-sm" onclick="adminDelBooking('${b.id}')">Slet</button></td></tr>`;
+    }).join('')+`</tbody></table></div>` :
+    '<div class="empty-state"><div class="icon">📅</div><p>Ingen bookinger.</p></div>';
+
+  document.getElementById('adminUsers').innerHTML = users.length ?
+    `<div style="overflow-x:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)">
+    <table class="admin-table"><thead><tr><th>Navn</th><th>Email</th><th>Bookinger</th><th></th></tr></thead><tbody>`+
+    users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${u.bookingCount}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="adminDelUser('${u.id}')">Slet</button></td></tr>`).join('')+
+    '</tbody></table></div>' :
+    '<div class="empty-state"><div class="icon">👤</div><p>Ingen brugere.</p></div>';
+}
+
+async function adminDelBooking(id){
+  if(!confirm('Slet booking?'))return;
+  await api('DELETE',`/api/bookings/${id}`); renderAdmin();
+}
+async function adminDelUser(id){
+  if(!confirm('Slet bruger og alle deres bookinger?'))return;
+  await api('DELETE',`/api/admin/users/${id}`); renderAdmin();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function showModal(title,body,okLabel,okClass,onOk){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalBody').textContent=body;
+  const btn=document.getElementById('modalOk');
+  btn.textContent=okLabel; btn.className=`btn ${okClass}`; btn.onclick=onOk;
+  document.getElementById('overlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click',e=>{ if(e.target===document.getElementById('overlay'))closeModal(); });
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtDate(s){ const [y,m,d]=s.split('-'); const days=['søndag','mandag','tirsdag','onsdag','torsdag','fredag','lørdag']; return `${days[new Date(s).getDay()]} d. ${d}/${m}/${y}`; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+document.getElementById('loginPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('regPwd').addEventListener('keydown',e=>{if(e.key==='Enter')doRegister();});
+
+init();
+</script>
+</body>
+</html>
